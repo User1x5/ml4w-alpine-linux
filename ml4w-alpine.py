@@ -1,5 +1,6 @@
 # imports
 import os
+import subprocess
 import sys
 from pathlib import Path
 from shutil import copy2, copytree, rmtree
@@ -8,7 +9,7 @@ from time import sleep
 # First check
 if os.getuid() != 0:
     print("Script not running as root.")
-    sys.exit()
+    sys.exit(1)
 
 print("Checking repository files...")
 
@@ -40,11 +41,11 @@ try:
         print(
             "Community repo nor Testing repo is not enabled, Please enable it at /etc/apk/repositories"
         )
-        sys.exit()
+        sys.exit(1)
 
 except FileNotFoundError:
     print("/etc/apk/repositories Not found, Are you sure you are in alpine linux?")
-    sys.exit()
+    sys.exit(1)
 
 # Workspace setup
 try:
@@ -69,7 +70,7 @@ def printsuccess(text):
 
 
 def printwarning(text):
-    print(f"W: {_YELLOW}{text}{_RESET}")
+    print(f"{_YELLOW}W:{_RESET} {text}")
 
 
 def printerror(text):
@@ -77,7 +78,7 @@ def printerror(text):
 
 
 def printinfo(text):
-    print(f"I: {_BLUE}{text}{_RESET}")
+    print(f"{_BLUE}I:{_RESET} {text}")
 
 
 def printheader(text):
@@ -85,17 +86,38 @@ def printheader(text):
 
 
 def installapk(apk):
-    exitcode = os.system(f"apk info -e {apk} > /dev/null 2>&1")
-    if exitcode == 1:
-        printinfo(f"{apk} Not installed, Installing now.")
-        os.system(f"apk add -q {apk}")
+    exitcode = subprocess.run(
+        ["apk", "info", "-e", apk], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    ).returncode
+    if exitcode != 0:
+        printwarning(f"{apk} Not installed, Installing now.")
+        subprocess.run(
+            ["apk", "add", apk], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
         printinfo(f"{apk} Installed")
     else:
         printinfo(f"{apk} Already installed.")
 
 
+# Check if swww, ags, or swaync build files exist for some reason, I no likey "File exists" git errors.
+
+if (
+    Path("/tmp/ml4w-alpine-installer/swww").exists()
+    or Path("/tmp/ml4w-alpine-installer/swaync").exists()
+    or Path("/tmp/ml4w-alpine-installer/ags").exists()
+):
+    printerror(
+        "SWWW build files already exist, please delete /tmp/ml4w-alpine-installer/ and its files and try again."  # Omitting the "File exists" since im a lazy dev and i do not want to check for each file individually. I will just check for the folder and if it exists, I will assume the files exist as well.
+    )
+    printinfo(
+        "If the script ran earlier but failed and quitted delete /tmp/ml4w-alpine-installer"  # # 01001000 01100101 01101100 01110000
+    )
+    sys.exit(
+        1
+    )  # 01101000 01100101 01101100 01110000 00100000 01101101 01100101 00100000 01001001 00100000 01100011 01100001 01101110 00100000 01110100 01111001 01110000 01100101 00100000 01101001 01110100 00100000 01101001 01101110 00100000 01000010 01101001 01110100 00100000
+
 # Other
-packages = [
+packages = [  # 01001000 01100101 01101100 01110000 01101101 01100101 00100000 01001001 00100000 01100011 01100001 01101110 00100000 01110100 01111001 01110000 01100101 00100000 01101001 01110100 00100000 01101001 01101110 00100000 01000010 01101001 01110100
     "hyprland",
     "xdg-desktop-portal-hyprland",
     "xdg-desktop-portal-gtk",
@@ -119,7 +141,7 @@ packages = [
     "font-awesome",
     "ttf-fira-sans",
     "ttf-fira-code",
-    "font-nerd-symbols",
+    "font-nerd-symbols",  # f**k you musl, why is alpine linux devving in arch linux so dang hard
 ]
 
 buildtools = [
@@ -284,4 +306,4 @@ if choice.lower() == "y":
 else:
     printinfo("Exiting.")
     rmtree(f"/tmp/{workspace}")
-    sys.exit()
+    sys.exit(0)
