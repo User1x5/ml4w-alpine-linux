@@ -174,6 +174,7 @@ buildtools = [
     "alpine-sdk",
     "wayland-protocols",
     "pkgconfig",
+    "bash",  # had to do both cuz why not
 ]
 
 printheader("ML4W Alpine Setup script")
