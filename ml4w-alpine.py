@@ -144,6 +144,7 @@ packages = [  # 01001000 01100101 01101100 01110000 01101101 01100101 00100000 0
     "ttf-fira-sans",
     "ttf-fira-code",
     "font-nerd-symbols",  # f**k you musl, why is alpine linux devving in arch linux so dang hard
+    "bash",
 ]
 
 buildtools = [
