@@ -157,6 +157,7 @@ buildtools = [
     "samurai",
     "gtk+3.0-dev",
     "gtk-layer-shell-dev",
+    "gtk4-layer-shell-dev",
     "wayland-dev",
     "libxkbcommon-dev",
     "pixman-dev",
