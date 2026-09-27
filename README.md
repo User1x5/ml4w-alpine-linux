@@ -4,7 +4,7 @@ This script as said, installs the needed files to install ml4w in alpine linux, 
 
 Please check [the disclaimer](#disclaimer) before executing the script (i had to fix this 2 or 3 times now)
 
-# Re *quirements
+# Requirements
 A Working alpine linux edge install
 At least 4 gb of ram
 
