@@ -1,3 +1,7 @@
+![GitHub License](https://shields.io)
+![GitHub Issues](https://shields.io)
+![Platform](https://shields.io)
+
 # ml4w-alpine-linux
 A Python script which installs ml4w libraries into alpine linux and the ml4w dotfiles since the ml4w devs didnt
 This script as said, installs the needed files to install ml4w in alpine linux, Since it uses musl
