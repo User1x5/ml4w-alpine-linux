@@ -6,6 +6,8 @@ from pathlib import Path
 from shutil import copy2, copytree, rmtree
 from time import sleep
 
+manual = False
+
 # First check
 if os.getuid() != 0:
     print("Script not running as root.")
@@ -66,7 +68,7 @@ _RESET = "\033[0m"
 
 # Functions
 def printsuccess(text):
-    print(f"S: {_GREEN}{text}{_RESET}")
+    print(f"{_GREEN}S:{_RESET} {text}")
 
 
 def printwarning(text):
@@ -94,7 +96,7 @@ def installapk(apk):
         subprocess.run(
             ["apk", "add", apk], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
-        printinfo(f"{apk} Installed")
+        printsuccess(f"{apk} Installed")
     else:
         printinfo(f"{apk} Already installed.")
 
@@ -147,8 +149,6 @@ packages = [  # 01001000 01100101 01101100 01110000 01101101 01100101 00100000 0
 buildtools = [
     "nodejs",
     "npm",
-    "rust",
-    "cargo",
     "meson",
     "ninja",
     "build-base",
@@ -168,7 +168,9 @@ buildtools = [
     "libhandy-dev",
     "libgtop-dev",
     "glib-dev",
-    "vala",
+    "alpine-sdk",
+    "wayland-protocols",
+    "pkgconfig",
 ]
 
 printheader("ML4W Alpine Setup script")
@@ -181,50 +183,69 @@ if choice.lower() == "y":
         installapk(tool)
 
     printinfo("Build tools installed. installing other packages.")
-
+    print()
     # SWWW Install
-    printinfo("Compiling swww.")
-    os.system(f"git clone https://github.com/LGFae/swww.git /tmp/{workspace}/swww")
-    os.mkdir(f"/tmp/{workspace}/swww_build")
-    os.system(
-        f'CARGO_TARGET_DIR="/tmp/{workspace}/swww_build/" cargo build --manifest-path="/tmp/{workspace}/swww/Cargo.toml" --release'
+    # There is no way i wrote all this to compile swww from source and just then discovered that its in the apk repositories
+
+    printwarning(
+        "Will download swww from apk, if you instead want to compile from source modify manual inside script to be True, In case that case be aware that it might have errors, Press enter to continue..."
     )
-    printwarning("Deleting source.")
-    rmtree(f"/tmp/{workspace}/swww")
-    printinfo("Giving perms...")
-    os.system(f"chmod +x /tmp/{workspace}/swww_build/release/swww")
-    os.system(f"chmod +x /tmp/{workspace}/swww_build/release/swww-daemon")
-    printinfo(
-        "Copying binaries"
-    )  # this is why i added a root check beside being lazy to detect doas or sudo
-    copy2(f"/tmp/{workspace}/swww_build/release/swww", "/usr/bin/swww")
-    copy2(f"/tmp/{workspace}/swww_build/release/swww-daemon", "/usr/bin/swww-daemon")
-    printinfo("Cleaning up SWWW...")
-    rmtree(f"/tmp/{workspace}/swww_build")
-    printinfo("SWWW Installed!")
-    sleep(1)
+    input()
+    print()
+    if manual == True:
+        printinfo("Compiling swww.")
+        os.system(f"git clone https://github.com/LGFae/swww.git /tmp/{workspace}/swww")
+        os.mkdir(f"/tmp/{workspace}/swww_build")
+        os.system(
+            f'CARGO_TARGET_DIR="/tmp/{workspace}/swww_build/" cargo build --manifest-path="/tmp/{workspace}/swww/Cargo.toml" --release'
+        )
+        printwarning("Deleting source.")
+        rmtree(f"/tmp/{workspace}/swww")
+        printinfo("Giving perms...")
+        os.system(f"chmod +x /tmp/{workspace}/swww_build/release/swww")
+        os.system(f"chmod +x /tmp/{workspace}/swww_build/release/swww-daemon")
+        printinfo(
+            "Copying biniaries"
+        )  # this is why i added a root check beside being lazy to detect doas or sudo
+        copy2(f"/tmp/{workspace}/swww_build/release/swww", "/usr/bin/swww")
+        copy2(
+            f"/tmp/{workspace}/swww_build/release/swww-daemon", "/usr/bin/swww-daemon"
+        )
+        printinfo("Cleaning up SWWW...")
+        rmtree(f"/tmp/{workspace}/swww_build")
+        printinfo("SWWW Installed!")
+        sleep(1)
+
+    else:
+        installapk("swww")  # So dang simple.
 
     # SwayNC install
-    printinfo("Compiling swaync.")
-    os.system(
-        f"git clone https://github.com/ErikReider/SwayNotificationCenter.git /tmp/{workspace}/swaync"
-    )
-    os.mkdir(f"/tmp/{workspace}/swaync_build")
-    os.system(
-        f"meson setup --prefix=/usr /tmp/{workspace}/swaync_build /tmp/{workspace}/swaync"
-    )
-    printinfo("Compiling SwayNC...")
-    os.system(f"meson compile -C /tmp/{workspace}/swaync_build")
-    printinfo("Copying binaries...")
-    os.system(f"meson install -C /tmp/{workspace}/swaync_build")
-    printinfo("Giving perms...")
-    os.chmod("/usr/bin/swaync", 0o755)
-    os.chmod("/usr/bin/swaync-client", 0o755)
-    printwarning("Cleaning up SwayNC...")
-    rmtree(f"/tmp/{workspace}/swaync_build")
-    rmtree(f"/tmp/{workspace}/swaync")
-    printinfo("SwayNC Installed!")
-    sleep(1)
+    # screw you compiling
+
+    if manual == True:
+        printinfo("Compiling swaync.")
+        os.system(
+            f"git clone https://github.com/ErikReider/SwayNotificationCenter.git /tmp/{workspace}/swaync"
+        )
+        os.mkdir(f"/tmp/{workspace}/swaync_build")
+        os.system(
+            f"meson setup --prefix=/usr /tmp/{workspace}/swaync_build /tmp/{workspace}/swaync"
+        )
+        printinfo("Compiling SwayNC...")
+        os.system(f"meson compile -C /tmp/{workspace}/swaync_build")
+        printinfo("Copying binaries...")
+        os.system(f"meson install -C /tmp/{workspace}/swaync_build")
+        printinfo("Giving perms...")
+        os.chmod("/usr/bin/swaync", 0o755)
+        os.chmod("/usr/bin/swaync-client", 0o755)
+        printwarning("Cleaning up SwayNC...")
+        rmtree(f"/tmp/{workspace}/swaync_build")
+        rmtree(f"/tmp/{workspace}/swaync")
+        printinfo("SwayNC Installed!")
+        sleep(1)
+
+    else:
+        installapk("swaync")
 
     # Aylur's GTK Shell install
     printinfo("Compiling Aylur's GTK Shell...")
