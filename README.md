@@ -2,6 +2,21 @@
 ![GitHub Issues](https://shields.io)
 ![Platform](https://shields.io)
 
+# WARNING!
+this proyect is discontinued, for now 
+
+## Why?
+1. As because alpine linux uses `musl` at difference of other systems that use `glibc` most of the support for packages is gone
+
+2. Bash, ls, and etc break after the script (Excluding sh)
+
+3. Alpine linux users mostly use `data` to set up their partitions, meaning the script would have to write on /media/disk/ and that means a complete rebuild of the script
+
+## When will the proyect continue?
+I will be doing research on the ml4w scripts to check what packages install, If i manage to do enough research i might be able to do a stable port, although updating ML4W is another problem
+
+# V deprecated for now. V
+
 # ml4w-alpine-linux
 A Python script which installs ml4w libraries into alpine linux and the ml4w dotfiles since the ml4w devs didnt
 This script as said, installs the needed files to install ml4w in alpine linux, Since it uses musl
